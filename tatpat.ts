@@ -61,7 +61,7 @@ function loop() {
    var grid = tat.grid;
 
     for (var x: number = 0; x < w; x++) {
-        for (var y: number = 0; y < h - 1; y++) {
+        for (var y: number = 0; y < h; y++) {
             var piece = grid[x][y];
 
             ctx.beginPath();
@@ -69,10 +69,15 @@ function loop() {
             ctx.lineWidth = 5;
             ctx.arc(x * stepX + stepX / 2, y * stepY + stepY / 2, 5, 0, Math.PI * 2);
             ctx.stroke();
+
+            // don't render the last row as there's nowhere to step to from there
+            if (y == h - 1) {
+                continue;
+            }
             
             var nx: number = 0;
             var ny: number = y + 1;
-            
+
             switch (piece) {
                 case Link.Left:
                     nx = x - 1;
