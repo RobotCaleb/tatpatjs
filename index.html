@@ -1,13 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title></title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <!--<link href="css/style.css" rel="stylesheet">-->
-        <script src="tatpat.js"></script>
-    </head>
-    <body>
+
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!--<link href="css/style.css" rel="stylesheet">-->
+    <script src="tatpat.js"></script>
+</head>
+
+<body>
     <canvas id="canvas" width="600" height="800"></canvas>
-    </body>
+    <br/>
+    <button id="btn-rebuild">Rebuild</button>
+    <button id="btn-save">Save</button>
+    <a id="download" download="tat.png" hidden="hidden"></a>
+    <br/>
+    <form id="form-pip">
+        <input class="pipinput" type="radio" name="Draw pips" value="0">None</input>
+        <input class="pipinput" type="radio" name="Draw pips" value="1" checked="checked">Intersections</input>
+        <input class="pipinput" type="radio" name="Draw pips" value="2">All</input>
+    </form>
+    <br/>
+    W = <span id='w'></span>
+    <br/>
+    H = <span id='h'></span>
+    </input>
+</body>
+
 </html>

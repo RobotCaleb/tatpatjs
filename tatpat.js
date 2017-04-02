@@ -1,7 +1,3 @@
-var canvas;
-var ctx;
-var canvasWidth = 600;
-var canvasHeight = 800;
 class Tat {
     constructor(x, y) {
         this.grid = [];
@@ -27,6 +23,12 @@ var Link;
     Link[Link["Up"] = 2] = "Up";
     Link[Link["Right"] = 3] = "Right";
 })(Link || (Link = {}));
+var PipDraw;
+(function (PipDraw) {
+    PipDraw[PipDraw["None"] = 0] = "None";
+    PipDraw[PipDraw["Intersections"] = 1] = "Intersections";
+    PipDraw[PipDraw["All"] = 2] = "All";
+})(PipDraw || (PipDraw = {}));
 class Run {
     constructor(x, y, next) {
         this.x = x;
@@ -34,24 +36,81 @@ class Run {
         this.link = next;
     }
 }
+var canvas;
+var ctx;
+var canvasWidth = 600;
+var canvasHeight = 800;
 var w = 6;
-var h = 8;
+var h = 9;
+var minW = 4;
+var minH = 6;
+var maxW = 12;
+var maxH = 16;
 var tat = new Tat(w, h);
-function loop() {
+var pipDraw = PipDraw.All;
+var loop = () => {
     requestAnimationFrame(loop);
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     var stepX = canvasWidth / w;
     var stepY = canvasHeight / h;
     var grid = tat.grid;
+    switch (pipDraw) {
+        case PipDraw.All: {
+            for (var x = 0; x < w; x++) {
+                for (var y = 0; y < h; y++) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = "red";
+                    ctx.lineWidth = 5;
+                    ctx.arc(x * stepX + stepX / 2, y * stepY + stepY / 2, 5, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+            break;
+        }
+        case PipDraw.Intersections: {
+            for (var x = 0; x < w; x++) {
+                for (var y = 0; y < h - 1; y++) {
+                    var piece = grid[x][y];
+                    var nx = x;
+                    var ny = y;
+                    switch (piece) {
+                        case Link.Left:
+                            nx = x - 1;
+                            ny = y + 1;
+                            break;
+                        case Link.Up:
+                            nx = x;
+                            ny = y + 1;
+                            break;
+                        case Link.Right:
+                            nx = x + 1;
+                            ny = y + 1;
+                            break;
+                        case Link.None:
+                            continue;
+                    }
+                    if (x == 0 && piece == Link.Left || x == w - 1 && piece == Link.Right) {
+                        continue;
+                    }
+                    ctx.strokeStyle = "red";
+                    ctx.lineWidth = 5;
+                    ctx.beginPath();
+                    ctx.arc(x * stepX + stepX / 2, y * stepY + stepY / 2, 5, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(nx * stepX + stepX / 2, ny * stepY + stepY / 2, 5, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+        }
+        case PipDraw.None: {
+            break;
+        }
+    }
     for (var x = 0; x < w; x++) {
         for (var y = 0; y < h; y++) {
             var piece = grid[x][y];
-            ctx.beginPath();
-            ctx.strokeStyle = "red";
-            ctx.lineWidth = 5;
-            ctx.arc(x * stepX + stepX / 2, y * stepY + stepY / 2, 5, 0, Math.PI * 2);
-            ctx.stroke();
             // don't render the last row as there's nowhere to step to from there
             if (y == h - 1) {
                 continue;
@@ -82,12 +141,82 @@ function loop() {
             ctx.stroke();
         }
     }
-}
+};
+var rebuild = () => {
+    tat = new Tat(w, h);
+    var wspan = document.getElementById('w');
+    wspan.innerText = w.toString();
+    var hspan = document.getElementById('h');
+    hspan.innerText = h.toString();
+};
+var save = () => {
+    var data = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+    var download = document.getElementById('download');
+    download.setAttribute("href", data);
+    download.click();
+};
+var updatePipDraw = () => {
+    var formPip = document.getElementById('form-pip');
+    var children = document.getElementsByClassName('pipinput');
+    for (var child in children) {
+        if (children.hasOwnProperty(child)) {
+            var element = children[child];
+            if (element.checked) {
+                pipDraw = parseInt(element.value);
+                break;
+            }
+        }
+    }
+};
 window.onload = () => {
     canvas = document.getElementById('canvas');
     ctx = canvas.getContext("2d");
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
+    var rbld = document.getElementById('btn-rebuild');
+    rbld.onclick = rebuild;
+    var btnSave = document.getElementById('btn-save');
+    btnSave.onclick = save;
+    var formPip = document.getElementById('form-pip');
+    formPip.onchange = updatePipDraw;
+    window.onkeypress = (key) => {
+        if (key.key == 'r') {
+            rebuild();
+        }
+        else if (key.key == 's') {
+            save();
+        }
+        else if (key.key == 'h') {
+            w = w - 1;
+            if (w < minW) {
+                w = maxW;
+            }
+            rebuild();
+        }
+        else if (key.key == 'j') {
+            w = w + 1;
+            if (w > maxW) {
+                w = minW;
+            }
+            rebuild();
+        }
+        else if (key.key == 'k') {
+            h = h - 1;
+            if (h < minH) {
+                h = maxH;
+            }
+            rebuild();
+        }
+        else if (key.key == 'l') {
+            h = h + 1;
+            if (h > maxH) {
+                h = minH;
+            }
+            rebuild();
+        }
+    };
+    updatePipDraw();
+    rebuild();
     loop();
 };
 //# sourceMappingURL=tatpat.js.map
