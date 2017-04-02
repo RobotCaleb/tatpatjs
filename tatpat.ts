@@ -7,6 +7,12 @@ class Tat {
             this.grid[m] = [];
             for (var n: number = 0; n < y; n++) {
                 var link = this.getRandomLink();
+
+                if (m > 0) {
+                    do {
+                        link = this.getRandomLink();
+                    } while (link == Link.Left && this.grid[m-1][n] == Link.Right) 
+                }
                 this.grid[m][n] = link;
             }
         }
@@ -34,6 +40,12 @@ enum PipDraw {
     All
 }
 
+enum Color {
+    RedBlack = 0,
+    BlackWhite,
+    WhiteBlack,
+}
+
 class Run {
     x: number;
     y: number;
@@ -58,13 +70,17 @@ var minW: number = 4;
 var minH: number = 6;
 var maxW: number = 12;
 var maxH: number = 16;
+
+var bg = 'black';
+var fg = 'red';
+
 var tat: Tat = new Tat(w, h);
 
 var pipDraw: PipDraw = PipDraw.All;
 
 var loop = () => {
     requestAnimationFrame(loop);
-    ctx.fillStyle = "black";
+    ctx.fillStyle = bg;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
     var stepX: number = canvasWidth / w;
@@ -77,7 +93,7 @@ var loop = () => {
             for (var x: number = 0; x < w; x++) {
                 for (var y: number = 0; y < h; y++) {
                     ctx.beginPath();
-                    ctx.strokeStyle = "red";
+                    ctx.strokeStyle = fg;
                     ctx.lineWidth = 5;
                     ctx.arc(x * stepX + stepX / 2, y * stepY + stepY / 2, 5, 0, Math.PI * 2);
                     ctx.stroke();
@@ -114,7 +130,7 @@ var loop = () => {
                         continue;
                     }
 
-                    ctx.strokeStyle = "red";
+                    ctx.strokeStyle = fg;
                     ctx.lineWidth = 5;
                     ctx.beginPath();
                     ctx.arc(x * stepX + stepX / 2, y * stepY + stepY / 2, 5, 0, Math.PI * 2);
@@ -162,7 +178,7 @@ var loop = () => {
             }
 
             ctx.beginPath();
-            ctx.strokeStyle = "red";
+            ctx.strokeStyle = fg;
             ctx.lineWidth = 10;
             ctx.moveTo(x * stepX + stepX / 2, y * stepY + stepY / 2);
             ctx.lineTo(nx * stepX + stepX / 2, ny * stepY + stepY / 2);
@@ -187,14 +203,39 @@ var save = () => {
 }
 
 var updatePipDraw = () => {
-    var formPip = <HTMLFormElement>document.getElementById('form-pip');
-
     var children = document.getElementsByClassName('pipinput');
     for (var child in children) {
         if (children.hasOwnProperty(child)) {
             var element: HTMLInputElement = <HTMLInputElement>children[child];
             if (element.checked) {
                 pipDraw = <PipDraw>parseInt(element.value);
+                break;
+            }
+        }
+    }
+}
+
+var updateColor = () => {
+    var children = document.getElementsByClassName('colorinput');
+    for (var child in children) {
+        if (children.hasOwnProperty(child)) {
+            var element: HTMLInputElement = <HTMLInputElement>children[child];
+            if (element.checked) {
+                var color: Color = <Color>parseInt(element.value);
+                switch (color) {
+                    case Color.RedBlack:
+                        fg = 'red';
+                        bg = 'black';
+                        break;
+                    case Color.BlackWhite:
+                        fg = 'black';
+                        bg = 'white';
+                        break;
+                    case Color.WhiteBlack:
+                        fg = 'white';
+                        bg = 'black';
+                        break;
+                }
                 break;
             }
         }
@@ -216,6 +257,9 @@ window.onload = () => {
 
     var formPip = <HTMLFormElement>document.getElementById('form-pip');
     formPip.onchange = updatePipDraw;
+
+    var formColor = <HTMLFormElement>document.getElementById('form-color');
+    formColor.onchange = updateColor;
 
     window.onkeypress = (key: KeyboardEvent) => {
         if (key.key == 'r') {
@@ -255,6 +299,8 @@ window.onload = () => {
     }
 
     updatePipDraw();
+
+    updateColor();
 
     rebuild();
 

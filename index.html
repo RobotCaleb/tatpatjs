@@ -14,18 +14,20 @@
     <br/>
     <button id="btn-rebuild">Rebuild</button>
     <button id="btn-save">Save</button>
-    <a id="download" download="tat.png" hidden="hidden"></a>
-    <br/>
+    <form id="form-color">
+        <input class="colorinput" type="radio" name="Draw pips" value="0" checked="checked">Red on black</input>
+        <input class="colorinput" type="radio" name="Draw pips" value="1">Black on white</input>
+        <input class="colorinput" type="radio" name="Draw pips" value="2">White on Black</input>
+    </form>
     <form id="form-pip">
         <input class="pipinput" type="radio" name="Draw pips" value="0">None</input>
         <input class="pipinput" type="radio" name="Draw pips" value="1" checked="checked">Intersections</input>
         <input class="pipinput" type="radio" name="Draw pips" value="2">All</input>
     </form>
-    <br/>
     W = <span id='w'></span>
     <br/>
     H = <span id='h'></span>
-    </input>
+    <a id="download" download="tat.png" hidden="hidden"></a>
 </body>
 
 </html>

@@ -5,6 +5,11 @@ class Tat {
             this.grid[m] = [];
             for (var n = 0; n < y; n++) {
                 var link = this.getRandomLink();
+                if (m > 0) {
+                    do {
+                        link = this.getRandomLink();
+                    } while (link == Link.Left && this.grid[m - 1][n] == Link.Right);
+                }
                 this.grid[m][n] = link;
             }
         }
@@ -29,6 +34,12 @@ var PipDraw;
     PipDraw[PipDraw["Intersections"] = 1] = "Intersections";
     PipDraw[PipDraw["All"] = 2] = "All";
 })(PipDraw || (PipDraw = {}));
+var Color;
+(function (Color) {
+    Color[Color["RedBlack"] = 0] = "RedBlack";
+    Color[Color["BlackWhite"] = 1] = "BlackWhite";
+    Color[Color["WhiteBlack"] = 2] = "WhiteBlack";
+})(Color || (Color = {}));
 class Run {
     constructor(x, y, next) {
         this.x = x;
@@ -46,11 +57,13 @@ var minW = 4;
 var minH = 6;
 var maxW = 12;
 var maxH = 16;
+var bg = 'black';
+var fg = 'red';
 var tat = new Tat(w, h);
 var pipDraw = PipDraw.All;
 var loop = () => {
     requestAnimationFrame(loop);
-    ctx.fillStyle = "black";
+    ctx.fillStyle = bg;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     var stepX = canvasWidth / w;
     var stepY = canvasHeight / h;
@@ -60,7 +73,7 @@ var loop = () => {
             for (var x = 0; x < w; x++) {
                 for (var y = 0; y < h; y++) {
                     ctx.beginPath();
-                    ctx.strokeStyle = "red";
+                    ctx.strokeStyle = fg;
                     ctx.lineWidth = 5;
                     ctx.arc(x * stepX + stepX / 2, y * stepY + stepY / 2, 5, 0, Math.PI * 2);
                     ctx.stroke();
@@ -93,7 +106,7 @@ var loop = () => {
                     if (x == 0 && piece == Link.Left || x == w - 1 && piece == Link.Right) {
                         continue;
                     }
-                    ctx.strokeStyle = "red";
+                    ctx.strokeStyle = fg;
                     ctx.lineWidth = 5;
                     ctx.beginPath();
                     ctx.arc(x * stepX + stepX / 2, y * stepY + stepY / 2, 5, 0, Math.PI * 2);
@@ -134,7 +147,7 @@ var loop = () => {
                 continue;
             }
             ctx.beginPath();
-            ctx.strokeStyle = "red";
+            ctx.strokeStyle = fg;
             ctx.lineWidth = 10;
             ctx.moveTo(x * stepX + stepX / 2, y * stepY + stepY / 2);
             ctx.lineTo(nx * stepX + stepX / 2, ny * stepY + stepY / 2);
@@ -156,13 +169,38 @@ var save = () => {
     download.click();
 };
 var updatePipDraw = () => {
-    var formPip = document.getElementById('form-pip');
     var children = document.getElementsByClassName('pipinput');
     for (var child in children) {
         if (children.hasOwnProperty(child)) {
             var element = children[child];
             if (element.checked) {
                 pipDraw = parseInt(element.value);
+                break;
+            }
+        }
+    }
+};
+var updateColor = () => {
+    var children = document.getElementsByClassName('colorinput');
+    for (var child in children) {
+        if (children.hasOwnProperty(child)) {
+            var element = children[child];
+            if (element.checked) {
+                var color = parseInt(element.value);
+                switch (color) {
+                    case Color.RedBlack:
+                        fg = 'red';
+                        bg = 'black';
+                        break;
+                    case Color.BlackWhite:
+                        fg = 'black';
+                        bg = 'white';
+                        break;
+                    case Color.WhiteBlack:
+                        fg = 'white';
+                        bg = 'black';
+                        break;
+                }
                 break;
             }
         }
@@ -179,6 +217,8 @@ window.onload = () => {
     btnSave.onclick = save;
     var formPip = document.getElementById('form-pip');
     formPip.onchange = updatePipDraw;
+    var formColor = document.getElementById('form-color');
+    formColor.onchange = updateColor;
     window.onkeypress = (key) => {
         if (key.key == 'r') {
             rebuild();
@@ -216,6 +256,7 @@ window.onload = () => {
         }
     };
     updatePipDraw();
+    updateColor();
     rebuild();
     loop();
 };
