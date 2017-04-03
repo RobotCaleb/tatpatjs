@@ -11,7 +11,7 @@ class Tat {
                 if (m > 0) {
                     do {
                         link = this.getRandomLink();
-                    } while (link == Link.Left && this.grid[m-1][n] == Link.Right) 
+                    } while (link == Link.Left && this.grid[m - 1][n] == Link.Right)
                 }
                 this.grid[m][n] = link;
             }
@@ -35,15 +35,21 @@ enum Link {
 }
 
 enum PipDraw {
-    None = 0,
+    Min = 0,
+    None = Min,
     Intersections,
-    All
+    All,
+
+    Max = All
 }
 
 enum Color {
-    RedBlack = 0,
+    Min = 0,
+    RedBlack = Min,
     BlackWhite,
     WhiteBlack,
+
+    Max = WhiteBlack
 }
 
 class Run {
@@ -76,10 +82,27 @@ var fg = 'red';
 
 var tat: Tat = new Tat(w, h);
 
-var pipDraw: PipDraw = PipDraw.All;
+var pipDraw: PipDraw = PipDraw.Intersections;
+var color: Color = Color.BlackWhite;
 
 var loop = () => {
     requestAnimationFrame(loop);
+
+    switch (color) {
+        case Color.RedBlack:
+            fg = 'red';
+            bg = 'black';
+            break;
+        case Color.BlackWhite:
+            fg = 'black';
+            bg = 'white';
+            break;
+        case Color.WhiteBlack:
+            fg = 'white';
+            bg = 'black';
+            break;
+    }
+
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
@@ -215,32 +238,59 @@ var updatePipDraw = () => {
     }
 }
 
+var updatePipDrawForm = () => {
+    var children = document.getElementsByClassName('pipinput');
+    for (var child in children) {
+        if (children.hasOwnProperty(child)) {
+            var element: HTMLInputElement = <HTMLInputElement>children[child];
+            if (<PipDraw>parseInt(element.value) == pipDraw) {
+                element.checked = true;
+                break;
+            }
+        }
+    }
+}
+
 var updateColor = () => {
     var children = document.getElementsByClassName('colorinput');
     for (var child in children) {
         if (children.hasOwnProperty(child)) {
             var element: HTMLInputElement = <HTMLInputElement>children[child];
             if (element.checked) {
-                var color: Color = <Color>parseInt(element.value);
-                switch (color) {
-                    case Color.RedBlack:
-                        fg = 'red';
-                        bg = 'black';
-                        break;
-                    case Color.BlackWhite:
-                        fg = 'black';
-                        bg = 'white';
-                        break;
-                    case Color.WhiteBlack:
-                        fg = 'white';
-                        bg = 'black';
-                        break;
-                }
+                color = <Color>parseInt(element.value);
                 break;
             }
         }
     }
 }
+
+var updateColorForm = () => {
+    var children = document.getElementsByClassName('colorinput');
+    for (var child in children) {
+        if (children.hasOwnProperty(child)) {
+            var element: HTMLInputElement = <HTMLInputElement>children[child];
+            if (<Color>parseInt(element.value) == color) {
+                element.checked = true;
+                break;
+            }
+        }
+    }
+}
+
+var nextColor = () => {
+    color++;
+    if (color > Color.Max) {
+        color = Color.Min;
+    }
+}
+
+var nextIntersect = () => {
+    pipDraw++;
+    if (pipDraw > PipDraw.Max) {
+        pipDraw = PipDraw.Min;
+    }
+}
+
 
 window.onload = () => {
     canvas = <HTMLCanvasElement>document.getElementById('canvas');
@@ -296,11 +346,19 @@ window.onload = () => {
             }
             rebuild();
         }
+        else if (key.key == 'c') {
+            nextColor();
+            updateColorForm();
+        }
+        else if (key.key == 'i') {
+            nextIntersect();
+            updatePipDrawForm();
+        }
     }
 
-    updatePipDraw();
+    updatePipDrawForm();
 
-    updateColor();
+    updateColorForm();
 
     rebuild();
 

@@ -30,15 +30,19 @@ var Link;
 })(Link || (Link = {}));
 var PipDraw;
 (function (PipDraw) {
+    PipDraw[PipDraw["Min"] = 0] = "Min";
     PipDraw[PipDraw["None"] = 0] = "None";
     PipDraw[PipDraw["Intersections"] = 1] = "Intersections";
     PipDraw[PipDraw["All"] = 2] = "All";
+    PipDraw[PipDraw["Max"] = 2] = "Max";
 })(PipDraw || (PipDraw = {}));
 var Color;
 (function (Color) {
+    Color[Color["Min"] = 0] = "Min";
     Color[Color["RedBlack"] = 0] = "RedBlack";
     Color[Color["BlackWhite"] = 1] = "BlackWhite";
     Color[Color["WhiteBlack"] = 2] = "WhiteBlack";
+    Color[Color["Max"] = 2] = "Max";
 })(Color || (Color = {}));
 class Run {
     constructor(x, y, next) {
@@ -60,9 +64,24 @@ var maxH = 16;
 var bg = 'black';
 var fg = 'red';
 var tat = new Tat(w, h);
-var pipDraw = PipDraw.All;
+var pipDraw = PipDraw.Intersections;
+var color = Color.BlackWhite;
 var loop = () => {
     requestAnimationFrame(loop);
+    switch (color) {
+        case Color.RedBlack:
+            fg = 'red';
+            bg = 'black';
+            break;
+        case Color.BlackWhite:
+            fg = 'black';
+            bg = 'white';
+            break;
+        case Color.WhiteBlack:
+            fg = 'white';
+            bg = 'black';
+            break;
+    }
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     var stepX = canvasWidth / w;
@@ -180,30 +199,52 @@ var updatePipDraw = () => {
         }
     }
 };
+var updatePipDrawForm = () => {
+    var children = document.getElementsByClassName('pipinput');
+    for (var child in children) {
+        if (children.hasOwnProperty(child)) {
+            var element = children[child];
+            if (parseInt(element.value) == pipDraw) {
+                element.checked = true;
+                break;
+            }
+        }
+    }
+};
 var updateColor = () => {
     var children = document.getElementsByClassName('colorinput');
     for (var child in children) {
         if (children.hasOwnProperty(child)) {
             var element = children[child];
             if (element.checked) {
-                var color = parseInt(element.value);
-                switch (color) {
-                    case Color.RedBlack:
-                        fg = 'red';
-                        bg = 'black';
-                        break;
-                    case Color.BlackWhite:
-                        fg = 'black';
-                        bg = 'white';
-                        break;
-                    case Color.WhiteBlack:
-                        fg = 'white';
-                        bg = 'black';
-                        break;
-                }
+                color = parseInt(element.value);
                 break;
             }
         }
+    }
+};
+var updateColorForm = () => {
+    var children = document.getElementsByClassName('colorinput');
+    for (var child in children) {
+        if (children.hasOwnProperty(child)) {
+            var element = children[child];
+            if (parseInt(element.value) == color) {
+                element.checked = true;
+                break;
+            }
+        }
+    }
+};
+var nextColor = () => {
+    color++;
+    if (color > Color.Max) {
+        color = Color.Min;
+    }
+};
+var nextIntersect = () => {
+    pipDraw++;
+    if (pipDraw > PipDraw.Max) {
+        pipDraw = PipDraw.Min;
     }
 };
 window.onload = () => {
@@ -254,9 +295,17 @@ window.onload = () => {
             }
             rebuild();
         }
+        else if (key.key == 'c') {
+            nextColor();
+            updateColorForm();
+        }
+        else if (key.key == 'i') {
+            nextIntersect();
+            updatePipDrawForm();
+        }
     };
-    updatePipDraw();
-    updateColor();
+    updatePipDrawForm();
+    updateColorForm();
     rebuild();
     loop();
 };
