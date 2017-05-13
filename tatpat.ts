@@ -85,9 +85,9 @@ var tat: Tat = new Tat(w, h);
 var pipDraw: PipDraw = PipDraw.Intersections;
 var color: Color = Color.BlackWhite;
 
-var loop = () => {
-    requestAnimationFrame(loop);
+var dirty: Boolean = false;
 
+var render = () => {
     switch (color) {
         case Color.RedBlack:
             fg = 'red';
@@ -216,6 +216,8 @@ var rebuild = () => {
     wspan.innerText = w.toString();
     var hspan: HTMLSpanElement = <HTMLSpanElement>document.getElementById('h');
     hspan.innerText = h.toString();
+
+    render();
 }
 
 var save = () => {
@@ -223,6 +225,8 @@ var save = () => {
     var download = <HTMLLinkElement>document.getElementById('download');
     download.setAttribute("href", data);
     download.click();
+
+    render();
 }
 
 var updatePipDraw = () => {
@@ -236,6 +240,8 @@ var updatePipDraw = () => {
             }
         }
     }
+
+    render();
 }
 
 var updatePipDrawForm = () => {
@@ -249,6 +255,8 @@ var updatePipDrawForm = () => {
             }
         }
     }
+
+    render();
 }
 
 var updateColor = () => {
@@ -262,6 +270,8 @@ var updateColor = () => {
             }
         }
     }
+
+    render();
 }
 
 var updateColorForm = () => {
@@ -275,6 +285,8 @@ var updateColorForm = () => {
             }
         }
     }
+
+    render();
 }
 
 var nextColor = () => {
@@ -362,5 +374,5 @@ window.onload = () => {
 
     rebuild();
 
-    loop();
+    render();
 }

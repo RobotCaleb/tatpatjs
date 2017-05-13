@@ -66,8 +66,8 @@ var fg = 'red';
 var tat = new Tat(w, h);
 var pipDraw = PipDraw.Intersections;
 var color = Color.BlackWhite;
-var loop = () => {
-    requestAnimationFrame(loop);
+var dirty = false;
+var render = () => {
     switch (color) {
         case Color.RedBlack:
             fg = 'red';
@@ -180,12 +180,14 @@ var rebuild = () => {
     wspan.innerText = w.toString();
     var hspan = document.getElementById('h');
     hspan.innerText = h.toString();
+    render();
 };
 var save = () => {
     var data = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
     var download = document.getElementById('download');
     download.setAttribute("href", data);
     download.click();
+    render();
 };
 var updatePipDraw = () => {
     var children = document.getElementsByClassName('pipinput');
@@ -198,6 +200,7 @@ var updatePipDraw = () => {
             }
         }
     }
+    render();
 };
 var updatePipDrawForm = () => {
     var children = document.getElementsByClassName('pipinput');
@@ -210,6 +213,7 @@ var updatePipDrawForm = () => {
             }
         }
     }
+    render();
 };
 var updateColor = () => {
     var children = document.getElementsByClassName('colorinput');
@@ -222,6 +226,7 @@ var updateColor = () => {
             }
         }
     }
+    render();
 };
 var updateColorForm = () => {
     var children = document.getElementsByClassName('colorinput');
@@ -234,6 +239,7 @@ var updateColorForm = () => {
             }
         }
     }
+    render();
 };
 var nextColor = () => {
     color++;
@@ -307,6 +313,6 @@ window.onload = () => {
     updatePipDrawForm();
     updateColorForm();
     rebuild();
-    loop();
+    render();
 };
 //# sourceMappingURL=tatpat.js.map
