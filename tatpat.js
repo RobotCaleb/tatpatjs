@@ -1,3 +1,21 @@
+var seed = Math.random();
+var seeds = [];
+var seedIndex = 0;
+var random = () => {
+    var x;
+    do {
+        x = Math.sin(seed++) * 10000;
+        x = x - Math.floor(x);
+    } while (x < 0.15 || x > 0.9);
+    x = (x - 0.15) * 1 / 0.75;
+    return x;
+};
+var seedRandom = (sd) => {
+    if (!sd) {
+        sd = Math.random();
+    }
+    seed = sd;
+};
 class Tat {
     constructor(x, y) {
         this.grid = [];
@@ -14,9 +32,12 @@ class Tat {
             }
         }
     }
+    state() {
+        return this.rng.state();
+    }
     getRandomLink() {
         var keys = Object.keys(Link);
-        var index = Math.floor(Math.random() * keys.length / 2);
+        var index = Math.floor(random() * keys.length / 2);
         var k = keys[index];
         return parseInt(k, 10);
     }
@@ -53,24 +74,29 @@ class Run {
 }
 var canvas;
 var ctx;
-var canvasWidth = 1200;
+var canvasWidth = 600;
 var canvasHeight = 800;
 var halfWidth = canvasWidth / 2;
-var w = 6;
+var pipRadius = 8;
+var w = 3;
 var h = 9;
-var minW = 4;
-var minH = 6;
+var minW = 3;
+var minH = 3;
 var maxW = 12;
 var maxH = 16;
 var bg = 'black';
 var fg = 'red';
-var tat = new Tat(w, h);
+var tat;
 var pipDraw = PipDraw.Intersections;
 var color = Color.BlackWhite;
 var dirty = false;
 var render = () => {
     renderWhich("left");
     renderWhich("right");
+    var wspan = document.getElementById('w');
+    wspan.innerText = w.toString();
+    var hspan = document.getElementById('h');
+    hspan.innerText = h.toString();
 };
 var renderWhich = (which) => {
     if (which == "right") {
@@ -109,7 +135,9 @@ var renderWhich = (which) => {
                     ctx.beginPath();
                     ctx.strokeStyle = fg;
                     ctx.lineWidth = 5;
-                    ctx.arc(x * stepX + stepX / 2, y * stepY + stepY / 2, 5, 0, Math.PI * 2);
+                    ctx.arc(x * stepX + stepX / 2, y * stepY + stepY / 2, pipRadius, 0, Math.PI * 2);
+                    ctx.fillStyle = fg;
+                    ctx.fill();
                     ctx.stroke();
                 }
             }
@@ -143,10 +171,14 @@ var renderWhich = (which) => {
                     ctx.strokeStyle = fg;
                     ctx.lineWidth = 5;
                     ctx.beginPath();
-                    ctx.arc(x * stepX + stepX / 2, y * stepY + stepY / 2, 5, 0, Math.PI * 2);
+                    ctx.arc(x * stepX + stepX / 2, y * stepY + stepY / 2, pipRadius, 0, Math.PI * 2);
+                    ctx.fillStyle = fg;
+                    ctx.fill();
                     ctx.stroke();
                     ctx.beginPath();
-                    ctx.arc(nx * stepX + stepX / 2, ny * stepY + stepY / 2, 5, 0, Math.PI * 2);
+                    ctx.arc(nx * stepX + stepX / 2, ny * stepY + stepY / 2, pipRadius, 0, Math.PI * 2);
+                    ctx.fillStyle = fg;
+                    ctx.fill();
                     ctx.stroke();
                 }
             }
@@ -189,12 +221,35 @@ var renderWhich = (which) => {
         }
     }
 };
-var rebuild = () => {
+var rebuild = (reseed) => {
+    if (reseed == false) {
+        seed = seeds[seedIndex];
+    }
+    else {
+        seedRandom();
+        seeds.push(seed);
+        seedIndex = seeds.length - 1;
+    }
     tat = new Tat(w, h);
-    var wspan = document.getElementById('w');
-    wspan.innerText = w.toString();
-    var hspan = document.getElementById('h');
-    hspan.innerText = h.toString();
+    render();
+};
+var next = () => {
+    seedIndex = seedIndex + 1;
+    if (seedIndex >= seeds.length) {
+        rebuild();
+        return;
+    }
+    seedRandom(seeds[seedIndex]);
+    tat = new Tat(w, h);
+    render();
+};
+var prev = () => {
+    seedIndex = seedIndex - 1;
+    if (seedIndex < 0) {
+        seedIndex = 0;
+    }
+    seedRandom(seeds[seedIndex]);
+    tat = new Tat(w, h);
     render();
 };
 var save = () => {
@@ -274,16 +329,22 @@ window.onload = () => {
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
     var rbld = document.getElementById('btn-rebuild');
-    rbld.onclick = rebuild;
+    rbld.onclick = () => { rebuild(); };
     var btnSave = document.getElementById('btn-save');
     btnSave.onclick = save;
     var formPip = document.getElementById('form-pip');
     formPip.onchange = updatePipDraw;
     var formColor = document.getElementById('form-color');
     formColor.onchange = updateColor;
-    window.onkeypress = (key) => {
+    window.onkeydown = (key) => {
         if (key.key == 'r') {
             rebuild();
+        }
+        else if (key.keyCode == 39 /* right arrow */) {
+            next();
+        }
+        else if (key.keyCode == 37 /* left arrow */) {
+            prev();
         }
         else if (key.key == 's') {
             save();
@@ -293,28 +354,28 @@ window.onload = () => {
             if (w < minW) {
                 w = maxW;
             }
-            rebuild();
+            rebuild(false);
         }
         else if (key.key == 'j') {
             w = w + 1;
             if (w > maxW) {
                 w = minW;
             }
-            rebuild();
+            rebuild(false);
         }
         else if (key.key == 'k') {
             h = h - 1;
             if (h < minH) {
                 h = maxH;
             }
-            rebuild();
+            rebuild(false);
         }
         else if (key.key == 'l') {
             h = h + 1;
             if (h > maxH) {
                 h = minH;
             }
-            rebuild();
+            rebuild(false);
         }
         else if (key.key == 'c') {
             nextColor();
@@ -325,9 +386,9 @@ window.onload = () => {
             updatePipDrawForm();
         }
     };
+    rebuild();
     updatePipDrawForm();
     updateColorForm();
-    rebuild();
     render();
 };
 //# sourceMappingURL=tatpat.js.map
