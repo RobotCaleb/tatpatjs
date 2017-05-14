@@ -53,8 +53,9 @@ class Run {
 }
 var canvas;
 var ctx;
-var canvasWidth = 600;
+var canvasWidth = 1200;
 var canvasHeight = 800;
+var halfWidth = canvasWidth / 2;
 var w = 6;
 var h = 9;
 var minW = 4;
@@ -68,6 +69,20 @@ var pipDraw = PipDraw.Intersections;
 var color = Color.BlackWhite;
 var dirty = false;
 var render = () => {
+    renderWhich("left");
+    renderWhich("right");
+};
+var renderWhich = (which) => {
+    if (which == "right") {
+        var data = ctx.getImageData(0, 0, halfWidth, canvasHeight);
+        createImageBitmap(data).then((bmp) => {
+            ctx.translate(halfWidth, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(bmp, -halfWidth, 0);
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+        });
+        return;
+    }
     switch (color) {
         case Color.RedBlack:
             fg = 'red';
@@ -84,7 +99,7 @@ var render = () => {
     }
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-    var stepX = canvasWidth / w;
+    var stepX = halfWidth / w;
     var stepY = canvasHeight / h;
     var grid = tat.grid;
     switch (pipDraw) {

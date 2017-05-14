@@ -67,8 +67,10 @@ class Run {
 var canvas: HTMLCanvasElement;
 var ctx: CanvasRenderingContext2D;
 
-var canvasWidth = 600;
+var canvasWidth = 1200;
 var canvasHeight = 800;
+
+var halfWidth = canvasWidth / 2;
 
 var w: number = 6;
 var h: number = 9;
@@ -88,6 +90,25 @@ var color: Color = Color.BlackWhite;
 var dirty: Boolean = false;
 
 var render = () => {
+    renderWhich("left");
+    renderWhich("right");
+}
+
+var renderWhich = (which: string) => {
+    if (which == "right") {
+        var data: ImageData = ctx.getImageData(0, 0, halfWidth, canvasHeight);
+
+        createImageBitmap(data).then((bmp: ImageBitmap) => {
+            ctx.translate(halfWidth, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(bmp, -halfWidth, 0);
+
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+        });
+
+        return;
+    }
+
     switch (color) {
         case Color.RedBlack:
             fg = 'red';
@@ -106,7 +127,7 @@ var render = () => {
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    var stepX: number = canvasWidth / w;
+    var stepX: number = halfWidth / w;
     var stepY: number = canvasHeight / h;
 
     var grid = tat.grid;
