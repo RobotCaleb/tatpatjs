@@ -87,6 +87,7 @@ var maxH = 16;
 var bg = 'black';
 var fg = 'red';
 var tat;
+var mc;
 var pipDraw = PipDraw.Intersections;
 var color = Color.BlackWhite;
 var dirty = false;
@@ -386,6 +387,24 @@ window.onload = () => {
             updatePipDrawForm();
         }
     };
+    mc = new Hammer(canvas);
+    // let the pan gesture support all directions.
+    // this will block the vertical scrolling on a touch-device while on the element
+    mc.get('swipe').set({ direction: Hammer.DIRECTION_LEFT | Hammer.DIRECTION_RIGHT });
+    // listen to events...
+    mc.on("swipeleft swiperight tap", (ev) => {
+        switch (ev.type) {
+            case "swipeleft":
+                prev();
+                break;
+            case "swiperight":
+                next();
+                break;
+            case "tap":
+                rebuild();
+                break;
+        }
+    });
     rebuild();
     updatePipDrawForm();
     updateColorForm();
